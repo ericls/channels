@@ -6,7 +6,7 @@ from django.test import override_settings
 from channels import DEFAULT_CHANNEL_LAYER
 from channels.exceptions import InvalidChannelLayerError
 from channels.layers import (
-    MAX_NAME_LENGTH,
+    BaseChannelLayer,
     InMemoryChannelLayer,
     channel_layers,
     get_channel_layer,
@@ -71,32 +71,18 @@ async def test_send_receive():
 
 
 @pytest.mark.parametrize(
-    "group_name,expected_valid",
-    [("¯\_(ツ)_/¯", False), ("chat", True), ("chat" * 100, False)],
+    "method",
+    [BaseChannelLayer().valid_channel_name, BaseChannelLayer().valid_group_name],
 )
-def test_valid_group_name(group_name, expected_valid):
-    layer = InMemoryChannelLayer()
-    if expected_valid:
-        layer.valid_group_name(group_name)
-    else:
-        with pytest.raises(TypeError) as e:
-            layer.valid_group_name(group_name)
-            assert e.value.message.startswith("Group")
-            assert group_name in e.value.message
-            assert "< {}".format(MAX_NAME_LENGTH) in e.value.message
-
-
 @pytest.mark.parametrize(
     "channel_name,expected_valid",
     [("¯\_(ツ)_/¯", False), ("chat", True), ("chat" * 100, False)],
 )
-def test_valid_channel_name(channel_name, expected_valid):
-    layer = InMemoryChannelLayer()
+def test_channel_and_group_name_validation(method, channel_name, expected_valid):
     if expected_valid:
-        layer.valid_channel_name(channel_name)
+        method(channel_name)
     else:
         with pytest.raises(TypeError) as e:
-            layer.valid_channel_name(channel_name)
+            method(channel_name)
             assert e.value.message.startswith("Channel")
             assert channel_name in e.value.message
-            assert "< {}".format(MAX_NAME_LENGTH) in e.value.message

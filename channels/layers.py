@@ -16,8 +16,6 @@ from channels import DEFAULT_CHANNEL_LAYER
 
 from .exceptions import ChannelFull, InvalidChannelLayerError
 
-MAX_NAME_LENGTH = 100
-
 
 class ChannelLayerManager:
     """
@@ -102,6 +100,8 @@ class BaseChannelLayer:
     common functionality.
     """
 
+    MAX_NAME_LENGTH = 100
+
     def __init__(self, expiry=60, capacity=100, channel_capacity=None):
         self.expiry = expiry
         self.capacity = capacity
@@ -135,7 +135,7 @@ class BaseChannelLayer:
         return self.capacity
 
     def match_type_and_length(self, name):
-        if isinstance(name, str) and (len(name) < 100):
+        if isinstance(name, str) and (len(name) < self.MAX_NAME_LENGTH):
             return True
         return False
 
